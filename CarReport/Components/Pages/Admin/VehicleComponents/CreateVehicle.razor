@@ -14,8 +14,7 @@
 </div>
 
 <div class="container d-flex justify-content-center col-lg-8 mb-5">
-    <EditForm Model="_vehicle" OnValidSubmit="CreateNewVehicle" class="form-control bg-light" FormName="CreateVehicleForm">
-        <DataAnnotationsValidator />
+    <EditForm Model="_vehicle" OnValidSubmit="CreateNewVehicleAsync" class="form-control bg-light" FormName="CreateVehicleForm">
         @if (_creationErrorMessage is not null)
         {
             <div class="alert alert-danger" role="alert">
@@ -37,19 +36,20 @@
 
 @code {
     private Vehicle _vehicle = new();
+    private EntityRepository<Vehicle> _vehicleRepository = default!;
     private bool _isSubmitting;
     private string? _creationErrorMessage;
 
-    private async Task CreateNewVehicle()
+    private async Task CreateNewVehicleAsync()
     {
         _isSubmitting = true;
         _creationErrorMessage = null;
 
         try
         {
-            EntityRepository<Vehicle> vehicleRepository = new EntityRepository<Vehicle>(CarMaintenanceDbContext);
-            await vehicleRepository.AddAsync(_vehicle);
-            await vehicleRepository.SaveChangesAsync();
+            _vehicleRepository = new EntityRepository<Vehicle>(CarMaintenanceDbContext);
+            await _vehicleRepository.AddAsync(_vehicle);
+            await _vehicleRepository.SaveChangesAsync();
             // MAYBE TODO: navigate somewhere but who cares
         }
         catch (Exception e)
