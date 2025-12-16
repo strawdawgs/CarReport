@@ -1,0 +1,41 @@
+﻿@using DataModelLibrary.Models
+
+<fieldset class="border border-2 rounded">
+    <div class="p-2">
+        <div class="row">
+            <div class="col">
+                <label for="displayName">Car Name:</label>
+                <InputText id="displayName" class="form-control" @bind-Value="Vehicle.DisplayName"></InputText>
+                <ValidationMessage For="() => Vehicle.DisplayName" />
+            </div>
+            <div class="col">
+                <label for="vin">Vin:</label>
+                <InputText id="vin" class="form-control" @bind-Value="Vehicle.Vin"></InputText>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <label for="year">Year:</label>
+                <InputNumber id="year" class="form-control" @bind-Value="Vehicle.Year"></InputNumber>
+            </div>
+            <div class="col">
+                <label for="make">Make:</label>
+                <InputText id="make" class="form-control" @bind-Value="Vehicle.Make"></InputText>
+            </div>
+            <div class="col">
+                <label for="model">Model:</label>
+                <InputText id="model" class="form-control" @bind-Value="Vehicle.Model"></InputText>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <label for="notes">Notes:</label>
+                <InputText id="notes" class="form-control" @bind-Value="Vehicle.Notes"></InputText>
+            </div>
+        </div>
+    </div>
+</fieldset>
+
+@code {
+    [Parameter] public required Vehicle Vehicle { get; set; }
+}
