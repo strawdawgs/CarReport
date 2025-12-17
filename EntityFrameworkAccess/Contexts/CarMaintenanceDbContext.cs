@@ -8,6 +8,7 @@ public class CarMaintenanceDbContext(DbContextOptions<CarMaintenanceDbContext> o
     public DbSet<Vehicle> Vehicles { get; set; }
     public DbSet<ServiceRecord> ServiceRecords { get; set; }
     public DbSet<TireRecord> TireRecords { get; set; }
+    public DbSet<ServiceType> ServiceTypes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
