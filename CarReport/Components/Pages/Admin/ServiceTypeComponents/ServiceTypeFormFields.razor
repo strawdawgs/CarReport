@@ -1,0 +1,30 @@
+﻿@using DataModelLibrary.Models
+
+<fieldset class="border border-2 rounded">
+    <div class="p-2">
+        <div class="row">
+            <div class="col">
+                <label for="serviceType">Service Type:</label>
+                <InputText id="serviceType" class="form-control" @bind-Value="ServiceType.Type"></InputText>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <label for="intervalInMilesMin">Recommended Minimum Interval in Miles:</label>
+                <InputNumber id="intervalInMilesMin" class="form-control" @bind-Value="ServiceType.RecommendedIntervalInMilesMinimum"></InputNumber>
+            </div>
+            <div class="col">
+                <label for="intervalInMilesMax">Recommended Maximum Interval in Miles:</label>
+                <InputNumber id="intervalInMilesMax" class="form-control" @bind-Value="ServiceType.RecommendedIntervalInMilesMaximum"></InputNumber>
+            </div>
+            <div class="col">
+                <label for="intervalInYears">Recommended Interval in Years:</label>
+                <InputNumber id="intervalInYears" class="form-control" @bind-Value="ServiceType.RecommendedIntervalInYears"></InputNumber>
+            </div>
+        </div>
+    </div>
+</fieldset>
+
+@code {
+    [Parameter] public required ServiceType ServiceType { get; set; }
+}
