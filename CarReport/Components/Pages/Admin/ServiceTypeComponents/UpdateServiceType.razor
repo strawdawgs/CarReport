@@ -1,5 +1,130 @@
-﻿<h3>UpdateServiceType</h3>
+﻿@page "/update/service-type/{Id:int}"
+
+@using DataModelLibrary.Models
+@using EntityFrameworkAccess.Repositories
+@using EntityFrameworkAccess.Contexts
+
+@inject NavigationManager NavigationManager
+@inject CarMaintenanceDbContext CarMaintenanceDbContext
+
+<title>Update Service Type</title>
+
+<div class="d-flex justify-content-center mb-4 mt-4">
+    <h2 class="fw-bold">Update Service Type</h2>
+</div>
+
+<div class="container d-flex justify-content-center col-lg-8 mb-5">
+
+    @if (_isLoading)
+    {
+        <div class="alert alert-info w-100 mt-3">Loading Service Type…</div>
+    }
+    else if (_loadErrorMessage is not null)
+    {
+        <div class="alert alert-danger w-100 mt-3">
+            <strong>Sorry!</strong> We couldn’t load the Service Type. @_loadErrorMessage
+        </div>
+    }
+    else if (_notFound)
+    {
+        <div class="alert alert-warning w-100 mt-3">Service Type (Id=@Id) was not found.</div>
+    }
+    else
+    {
+        <EditForm Model="_serviceType" OnValidSubmit="UpdateCurrentServiceTypeAsync" class="form-control bg-light" FormName="UpdateServiceTypeForm">
+            @if (_updateErrorMessage is not null)
+            {
+                <div class="alert alert-danger" role="alert">
+                    <strong>Update failed:</strong> @_updateErrorMessage
+                </div>
+            }
+            <ServiceTypeFormFields ServiceType="_serviceType" />
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary mt-3" type="submit" disabled="@_isUpdating">
+                    @if (_isUpdating)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    }
+                    Update Service Type
+                </button>
+
+                <button class="btn btn-secondary mt-3" @onclick="GoBack">Cancel</button>
+            </div>
+        </EditForm>
+    }
+</div>
 
 @code {
+    [Parameter] public int Id { get; set; }
+    private ServiceType _serviceType = default!;
+    private EntityRepository<ServiceType> _serviceTypeRepository = default!;
+    private bool _isLoading = true;
+    private bool _notFound;
+    private string? _loadErrorMessage;
+    private bool _isUpdating;
+    private string? _updateErrorMessage;
 
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadServiceTypeAsync();
+    }
+
+    private async Task LoadServiceTypeAsync()
+    {
+        _isLoading = true;
+        _notFound = false;
+        _loadErrorMessage = null;
+
+        try
+        {
+            _serviceTypeRepository = new EntityRepository<ServiceType>(CarMaintenanceDbContext);
+            var serviceType = await _serviceTypeRepository.FindByIdAsync(Id);
+            if (serviceType is not null)
+            {
+                _serviceType = serviceType;
+            }
+            else
+            {
+                _notFound = true;
+            }
+        }
+        catch (Exception e)
+        {
+            _loadErrorMessage = $"Error loading Agency with Id {Id}: {e.Message}";
+            Console.WriteLine(_loadErrorMessage);
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task UpdateCurrentServiceTypeAsync()
+    {
+        if (_serviceType is null) return;
+
+        _isUpdating = true;
+        _updateErrorMessage = null;
+
+        try
+        {
+            _serviceTypeRepository = new EntityRepository<ServiceType>(CarMaintenanceDbContext);
+            await _serviceTypeRepository.UpdateAsync(_serviceType);
+            await _serviceTypeRepository.SaveChangesAsync();
+            NavigationManager.NavigateTo($"/");
+        }
+        catch (Exception e)
+        {
+            _updateErrorMessage = e.Message;
+            Console.WriteLine(_updateErrorMessage);
+        }
+        finally
+        {
+            _isUpdating = false;
+        }
+    }
+
+    // TODO: Fix navigation to go back to the previous page instead of always going to the home page.
+    private void GoBack() => NavigationManager.NavigateTo("/");
 }
