@@ -1,5 +1,130 @@
-﻿<h3>DeleteServiceType</h3>
+﻿@page "/delete/service-type/{Id:int}"
+
+@using DataModelLibrary.Models
+@using EntityFrameworkAccess.Repositories
+@using EntityFrameworkAccess.Contexts
+
+@inject NavigationManager NavigationManager
+@inject CarMaintenanceDbContext CarMaintenanceDbContext
+
+<title>Delete Service Type</title>
+
+<div class="container col-lg-8 mt-4 mb-5">
+    @if (_isLoading)
+    {
+        <div class="alert alert-info">Loading Service Type…</div>
+    }
+    else if (_loadErrorMessage is not null)
+    {
+        <div class="alert alert-danger">
+            <strong>Sorry!</strong> We couldn’t load the Service Type. @_loadErrorMessage
+        </div>
+    }
+    else if (_notFound)
+    {
+        <div class="alert alert-warning">Service Type (Id=@Id) was not found.</div>
+    }
+    else
+    {
+        <div class="d-flex justify-content-center mb-4">
+            <h2 class="fw-bold">Delete Service Type – @_serviceType.Type</h2>
+        </div>
+        <div class="alert alert-danger">
+            <h4 class="mb-1">Are you sure you want to delete this Service Type?</h4>
+            <div><strong>@_serviceType.Type</strong></div>
+        </div>
+        @if (_deleteErrorMessage is not null)
+        {
+            <div class="alert alert-danger">
+                <strong>Sorry!</strong> We couldn’t delete the Service Type. @_deleteErrorMessage
+            </div>
+        }
+        <div class="d-flex gap-2">
+            <button class="btn btn-danger mt-3" @onclick="DeleteCurrentServiceTypeAsync" disabled="@_isDeleting">
+                @if (_isDeleting)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                }
+                Delete
+            </button>
+
+            <button class="btn btn-secondary mt-3" @onclick="GoBack">Cancel</button>
+        </div>
+    }
+</div>
 
 @code {
+    [Parameter] public int Id { get; set; }
+    private ServiceType _serviceType = default!;
+    private EntityRepository<ServiceType> _serviceTypeRepository = default!;
+    private bool _isLoading = true;
+    private bool _notFound;
+    private string? _loadErrorMessage;
+    private bool _isDeleting;
+    private string? _deleteErrorMessage;
 
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadServiceTypeAsync();
+    }
+
+    private async Task LoadServiceTypeAsync()
+    {
+        _isLoading = true;
+        _notFound = false;
+        _loadErrorMessage = null;
+        _deleteErrorMessage = null;
+
+        try
+        {
+            _serviceTypeRepository = new EntityRepository<ServiceType>(CarMaintenanceDbContext);
+            var serviceType = await _serviceTypeRepository.FindByIdAsync(Id);
+            if (serviceType is not null)
+            {
+                _serviceType = serviceType;
+            }
+            else
+            {
+                _notFound = true;
+            }
+        }
+        catch (Exception e)
+        {
+            _loadErrorMessage = $"Error loading Agency with Id {Id}: {e.Message}";
+            Console.WriteLine(_loadErrorMessage);
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteCurrentServiceTypeAsync()
+    {
+        if (_serviceType is null) return;
+
+        _isDeleting = true;
+        _deleteErrorMessage = null;
+
+        try
+        {
+            _serviceTypeRepository = new EntityRepository<ServiceType>(CarMaintenanceDbContext);
+            await _serviceTypeRepository.DeleteAsync(_serviceType);
+            await _serviceTypeRepository.SaveChangesAsync();
+            NavigationManager.NavigateTo($"/");
+        }
+        catch (Exception e)
+        {
+            _deleteErrorMessage = e.Message;
+            Console.WriteLine(_deleteErrorMessage);
+        }
+        finally
+        {
+            _isDeleting = false;
+        }
+    }
+
+    // TODO: Fix navigation to go back to the previous page instead of always going to the home page.
+    private void GoBack() => NavigationManager.NavigateTo("/");
 }
