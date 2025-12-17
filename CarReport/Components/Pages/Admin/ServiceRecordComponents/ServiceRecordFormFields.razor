@@ -1,5 +1,78 @@
-﻿<h3>ServiceRecordFormFields</h3>
+﻿@using DataModelLibrary.Models
+@using EntityFrameworkAccess.Contexts
+@using EntityFrameworkAccess.Repositories
+
+@inject CarMaintenanceDbContext CarMaintenanceDbContext
+
+<fieldset class="border border-2 rounded">
+    <div class="p-2">
+        <div class="row">
+            <div class="col">
+                <label for="vecicle">Vehicle:</label>
+                <InputSelect id="vehcile" class="form-control" @bind-Value="ServiceRecord.VehicleId">
+                    <option value="">-- Select Vehicle --</option>
+                    @foreach (var vehicle in _vehicles)
+                    {
+                        <option value="@vehicle.Id">
+                            @vehicle.DisplayName
+                        </option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="col">
+                <label for="serviceType">Service Type:</label>
+                <InputSelect id="serviceType" class="form-control" @bind-Value="ServiceRecord.ServiceTypeId">
+                    <option value="">-- Select Service Type --</option>
+                    @foreach (var serviceType in _serviceTypes)
+                    {
+                        <option value="@serviceType.Id">
+                            @serviceType.Type
+                        </option>
+                    }
+                </InputSelect>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <label for="dateLastServiced">Date Last Serviced:</label>
+                <InputDate id="dateLastServiced" class="form-control" @bind-Value="ServiceRecord.DateLastServiced"></InputDate>
+            </div>
+            <div class="col">
+                <label for="mileageLastServiced">Mileage Last Serviced:</label>
+                <InputNumber id="mileageLastServiced" class="form-control" @bind-Value="ServiceRecord.MileageLastService"></InputNumber>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <label for="costLastService">Cost Last Service:</label>
+                <InputNumber id="costLastService" class="form-control" @bind-Value="ServiceRecord.CostLastService" step="0.01"></InputNumber>
+            </div>
+            <div class="col">
+                <label for="shopName">Shop Name:</label>
+                <InputText id="shopName" class="form-control" @bind-Value="ServiceRecord.ShopName"></InputText>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <label for="notes">Notes:</label>
+                <InputTextArea id="notes" class="form-control" @bind-Value="ServiceRecord.Notes"></InputTextArea>
+            </div>
+        </div>
+    </div>
+</fieldset>
 
 @code {
+    [Parameter] public required ServiceRecord ServiceRecord { get; set; }
+    private EntityRepository<Vehicle> _vehicleRepository = default!;
+    private List<Vehicle> _vehicles = new();
+    private EntityRepository<ServiceType> _serviceTypeRepository = default!;
+    private List<ServiceType> _serviceTypes = new();
 
+    protected override async Task OnInitializedAsync()
+    {
+        _vehicleRepository = new EntityRepository<Vehicle>(CarMaintenanceDbContext);
+        _vehicles = (await _vehicleRepository.GetAllAsync()).ToList()!;
+        _serviceTypeRepository = new EntityRepository<ServiceType>(CarMaintenanceDbContext);
+        _serviceTypes = (await _serviceTypeRepository.GetAllAsync()).ToList()!;
+    }
 }

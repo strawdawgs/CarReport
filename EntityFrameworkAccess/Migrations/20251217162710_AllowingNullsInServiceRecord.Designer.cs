@@ -4,16 +4,19 @@ using EntityFrameworkAccess.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace EntityFrameworkDataAccess.Migrations
+namespace EntityFrameworkAccess.Migrations
 {
     [DbContext(typeof(CarMaintenanceDbContext))]
-    partial class CarMaintenanceDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251217162710_AllowingNullsInServiceRecord")]
+    partial class AllowingNullsInServiceRecord
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -109,10 +112,10 @@ namespace EntityFrameworkDataAccess.Migrations
                     b.Property<decimal?>("CostPerTire")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime?>("DateLastServiced")
+                    b.Property<DateTime>("DateLastServiced")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("MileageLastServiced")
+                    b.Property<int>("MileageLastServiced")
                         .HasColumnType("int");
 
                     b.Property<string>("Model")
@@ -123,6 +126,7 @@ namespace EntityFrameworkDataAccess.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Position")
+                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
