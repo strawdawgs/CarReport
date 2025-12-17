@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EntityFrameworkAccess.Migrations
 {
     [DbContext(typeof(CarMaintenanceDbContext))]
-    [Migration("20251217161641_NewServiceTypeModel")]
-    partial class NewServiceTypeModel
+    [Migration("20251217204610_SecondTryAtIntialCreate")]
+    partial class SecondTryAtIntialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,16 +33,16 @@ namespace EntityFrameworkAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("CostLastService")
+                    b.Property<decimal?>("CostLastService")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime>("DateLastServiced")
+                    b.Property<DateTime?>("DateLastServiced")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("MileageLastService")
+                    b.Property<int?>("MileageLastService")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("NextDueDate")
+                    b.Property<DateTime?>("NextDueDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("NextDueMileage")
@@ -79,13 +79,14 @@ namespace EntityFrameworkAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("RecommendedIntervalInMiles")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int?>("RecommendedIntervalInMilesMaximum")
+                        .HasColumnType("int");
 
-                    b.Property<string>("RecommendedIntervalInYears")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int?>("RecommendedIntervalInMilesMinimum")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RecommendedIntervalInYears")
+                        .HasColumnType("int");
 
                     b.Property<string>("Type")
                         .IsRequired()
@@ -112,10 +113,10 @@ namespace EntityFrameworkAccess.Migrations
                     b.Property<decimal?>("CostPerTire")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime>("DateLastServiced")
+                    b.Property<DateTime?>("DateLastServiced")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("MileageLastServiced")
+                    b.Property<int?>("MileageLastServiced")
                         .HasColumnType("int");
 
                     b.Property<string>("Model")
@@ -126,7 +127,6 @@ namespace EntityFrameworkAccess.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Position")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 

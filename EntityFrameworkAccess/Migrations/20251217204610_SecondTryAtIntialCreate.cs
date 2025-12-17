@@ -6,11 +6,27 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace EntityFrameworkAccess.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class SecondTryAtIntialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "ServiceTypes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Type = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    RecommendedIntervalInMilesMinimum = table.Column<int>(type: "int", nullable: true),
+                    RecommendedIntervalInMilesMaximum = table.Column<int>(type: "int", nullable: true),
+                    RecommendedIntervalInYears = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ServiceTypes", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Vehicles",
                 columns: table => new
@@ -36,19 +52,24 @@ namespace EntityFrameworkAccess.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     VehicleId = table.Column<int>(type: "int", nullable: false),
-                    ServiceType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    DateLastServiced = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    MileageLastService = table.Column<int>(type: "int", nullable: false),
-                    RecommendedInterval = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    ServiceTypeId = table.Column<int>(type: "int", nullable: false),
+                    DateLastServiced = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    MileageLastService = table.Column<int>(type: "int", nullable: true),
                     NextDueMileage = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    NextDueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CostLastService = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    NextDueDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CostLastService = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     ShopName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ServiceRecords", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ServiceRecords_ServiceTypes_ServiceTypeId",
+                        column: x => x.ServiceTypeId,
+                        principalTable: "ServiceTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_ServiceRecords_Vehicles_VehicleId",
                         column: x => x.VehicleId,
@@ -64,9 +85,9 @@ namespace EntityFrameworkAccess.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     VehicleId = table.Column<int>(type: "int", nullable: false),
-                    DateLastServiced = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    MileageLastServiced = table.Column<int>(type: "int", nullable: false),
-                    Position = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    DateLastServiced = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    MileageLastServiced = table.Column<int>(type: "int", nullable: true),
+                    Position = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     Brand = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     Model = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     TireSize = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
@@ -88,6 +109,11 @@ namespace EntityFrameworkAccess.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_ServiceRecords_ServiceTypeId",
+                table: "ServiceRecords",
+                column: "ServiceTypeId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ServiceRecords_VehicleId",
                 table: "ServiceRecords",
                 column: "VehicleId");
@@ -106,6 +132,9 @@ namespace EntityFrameworkAccess.Migrations
 
             migrationBuilder.DropTable(
                 name: "TireRecords");
+
+            migrationBuilder.DropTable(
+                name: "ServiceTypes");
 
             migrationBuilder.DropTable(
                 name: "Vehicles");

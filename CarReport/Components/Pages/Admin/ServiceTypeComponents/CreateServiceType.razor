@@ -1,0 +1,65 @@
+﻿@page "/create/service-type"
+
+@using DataModelLibrary.Models
+@using EntityFrameworkAccess.Repositories
+@using EntityFrameworkAccess.Contexts
+
+@inject NavigationManager NavigationManager
+@inject CarMaintenanceDbContext CarMaintenanceDbContext
+
+<title>Create Service Type</title>
+
+<div class="d-flex justify-content-center mb-4 mt-4">
+    <h2 class="fw-bold">Create New Service Type</h2>
+</div>
+
+<div class="container d-flex justify-content-center col-lg-8 mb-5">
+    <EditForm Model="_serviceType" OnValidSubmit="CreateNewServiceTypeAsync" class="form-control bg-light" FormName="CreateServiceTypeForm">
+        @if (_creationErrorMessage is not null)
+        {
+            <div class="alert alert-danger" role="alert">
+                <strong>Create failed:</strong> @_creationErrorMessage
+            </div>
+        }
+        <ServiceTypeFormFields ServiceType="_serviceType" />
+        <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-primary" type="submit" disabled="@_isSubmitting">
+                @if (_isSubmitting)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                }
+                Create Service Type
+            </button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    private ServiceType _serviceType = new();
+    private EntityRepository<ServiceType> _serviceTypeRepository = default!;
+    private bool _isSubmitting;
+    private string? _creationErrorMessage;
+
+    private async Task CreateNewServiceTypeAsync()
+    {
+        _isSubmitting = true;
+        _creationErrorMessage = null;
+
+        try
+        {
+            _serviceTypeRepository = new EntityRepository<ServiceType>(CarMaintenanceDbContext);
+            await _serviceTypeRepository.AddAsync(_serviceType);
+            await _serviceTypeRepository.SaveChangesAsync();
+            // MAYBE TODO: navigate somewhere but who cares
+        }
+        catch (Exception e)
+        {
+            _creationErrorMessage = e.Message;
+            Console.WriteLine(_creationErrorMessage);
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+}

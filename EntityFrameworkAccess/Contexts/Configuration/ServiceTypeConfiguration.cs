@@ -10,7 +10,8 @@ public class ServiceTypeConfiguration : IEntityTypeConfiguration<ServiceType>
     {
         builder.HasKey(st => st.Id);
         builder.Property(st => st.Type).HasMaxLength(100);
-        builder.Property(st => st.RecommendedIntervalInMiles).HasMaxLength(50);
-        builder.Property(st => st.RecommendedIntervalInYears).HasMaxLength(50);
+        builder.Property(st => st.RecommendedIntervalInMilesMinimum);
+        builder.Property(st => st.RecommendedIntervalInMilesMaximum);
+        builder.Property(st => st.RecommendedIntervalInYears);
     }
 }

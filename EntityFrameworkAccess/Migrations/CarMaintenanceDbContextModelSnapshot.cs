@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace EntityFrameworkDataAccess.Migrations
+namespace EntityFrameworkAccess.Migrations
 {
     [DbContext(typeof(CarMaintenanceDbContext))]
     partial class CarMaintenanceDbContextModelSnapshot : ModelSnapshot
@@ -76,13 +76,14 @@ namespace EntityFrameworkDataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("RecommendedIntervalInMiles")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int?>("RecommendedIntervalInMilesMaximum")
+                        .HasColumnType("int");
 
-                    b.Property<string>("RecommendedIntervalInYears")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int?>("RecommendedIntervalInMilesMinimum")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("RecommendedIntervalInYears")
+                        .HasColumnType("int");
 
                     b.Property<string>("Type")
                         .IsRequired()
