@@ -50,7 +50,7 @@
             _vehicleRepository = new EntityRepository<Vehicle>(CarMaintenanceDbContext);
             await _vehicleRepository.AddAsync(_vehicle);
             await _vehicleRepository.SaveChangesAsync();
-            NavigationManager.NavigateTo($"/");
+            _vehicle = new Vehicle();
         }
         catch (Exception e)
         {

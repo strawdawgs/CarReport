@@ -50,7 +50,7 @@
             _serviceTypeRepository = new EntityRepository<ServiceType>(CarMaintenanceDbContext);
             await _serviceTypeRepository.AddAsync(_serviceType);
             await _serviceTypeRepository.SaveChangesAsync();
-            NavigationManager.NavigateTo($"/");
+            _serviceType = new ServiceType();
         }
         catch (Exception e)
         {
