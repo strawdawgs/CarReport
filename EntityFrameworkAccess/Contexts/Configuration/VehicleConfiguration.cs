@@ -14,6 +14,7 @@ public class VehicleConfiguration : IEntityTypeConfiguration<Vehicle>
         builder.Property(v => v.Make).HasMaxLength(50);
         builder.Property(v => v.Model).HasMaxLength(50);
         builder.Property(v => v.Vin).HasMaxLength(17);
+        builder.Property(v => v.CurrentMileage);
         builder.Property(v => v.Notes);
     }
 }

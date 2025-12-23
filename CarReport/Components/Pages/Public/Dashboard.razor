@@ -1,0 +1,111 @@
+﻿@page "/"
+
+@using DataModelLibrary.Models
+@using EntityFrameworkAccess.Repositories
+@using EntityFrameworkAccess.Contexts
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.EntityFrameworkCore
+
+@inject CarMaintenanceDbContext CarMaintenanceDbContext
+
+<title>Dashboard</title>
+
+<h3>Dashboard</h3>
+
+@* Show current data for the 2015 Civic using Quickgrid *@
+<h2>Brandon's 2015 Civic</h2>
+@if (_vehicle2015Civic is not null)
+{
+    <h3>Current Mileage: @_vehicle2015Civic.CurrentMileage</h3>
+}
+<QuickGrid TGridItem="ServiceRecordViewModel" Items="_serviceRecords2015Civic.AsQueryable()" Class="table table-bordered border-dark p-2">
+    <PropertyColumn Property="@(c => c.ServiceType)" Title="Service Type" Class="align-content-center" />
+    <PropertyColumn Property="@(c => c.DateLastServiced)" Title="Date Last Serviced" Class="align-content-center" />
+    <PropertyColumn Property="@(c => c.MileageLastService)" Title="Mileage Last Service" Class="align-content-center" />
+    <PropertyColumn Property="@(c => c.RecommendedIntervalInMiles)" Title="Recommended Interval (Miles)" Class="align-content-center" />
+    <PropertyColumn Property="@(c => c.RecommendedIntervalInYears)" Title="Recommended Interval (Years)" Class="align-content-center" />
+    <PropertyColumn Property="@(c => c.NextDueMileage)" Title="Next Due Mileage" Class="align-content-center" />
+    <PropertyColumn Property="@(c => c.CostLastService)" Title="Cost Last Service" Class="align-content-center" />
+    <PropertyColumn Property="@(c => c.ShopName)" Title="Shop Name" Class="align-content-center" />
+</QuickGrid>
+
+@* Show current data for the 2019 Civic using Quickgrid *@
+<h2>Mallory's 2019 Civic</h2>
+<QuickGrid TGridItem="ServiceRecordViewModel" Items="_serviceRecords2019Civic.AsQueryable()" Class="table table-bordered border-dark p-2">
+    <PropertyColumn Property="@(c => c.ServiceType)" Title="Service Type" Class="align-content-center" />
+    <PropertyColumn Property="@(c => c.DateLastServiced)" Title="Date Last Serviced" Class="align-content-center" />
+    <PropertyColumn Property="@(c => c.MileageLastService)" Title="Mileage Last Service" Class="align-content-center" />
+    <PropertyColumn Property="@(c => c.RecommendedIntervalInMiles)" Title="Recommended Interval (Miles)" Class="align-content-center" />
+    <PropertyColumn Property="@(c => c.RecommendedIntervalInYears)" Title="Recommended Interval (Years)" Class="align-content-center" />
+    <PropertyColumn Property="@(c => c.NextDueMileage)" Title="Next Due Mileage" Class="align-content-center" />
+    <PropertyColumn Property="@(c => c.CostLastService)" Title="Cost Last Service" Class="align-content-center" />
+    <PropertyColumn Property="@(c => c.ShopName)" Title="Shop Name" Class="align-content-center" />
+</QuickGrid>
+
+@code {
+    private Vehicle? _vehicle2015Civic;
+    private Vehicle? _vehicle2019Civic;
+    private EntityRepository<Vehicle>? _vehicleRepository;
+    private List<ServiceRecordViewModel> _serviceRecords2015Civic = [];
+    private List<ServiceRecordViewModel> _serviceRecords2019Civic = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadVehiclesAsync();
+        _serviceRecords2015Civic = await LoadServiceRecordViewModelsAsync(_vehicle2015Civic!.Id);
+        _serviceRecords2019Civic = await LoadServiceRecordViewModelsAsync(_vehicle2019Civic!.Id);
+    }
+
+    private async Task LoadVehiclesAsync()
+    {
+        _vehicleRepository = new EntityRepository<Vehicle>(CarMaintenanceDbContext);
+        var vehicles = await _vehicleRepository.GetAllAsync();
+        _vehicle2015Civic = vehicles.FirstOrDefault(v => v!.DisplayName == "Brandons Car");
+        _vehicle2019Civic = vehicles.FirstOrDefault(v => v!.DisplayName == "Mallorys Car");
+    }
+
+    private async Task<List<ServiceType>> LoadAllServiceTypes()
+    {
+        var serviceTypeRepository = new EntityRepository<ServiceType>(CarMaintenanceDbContext);
+        return (await serviceTypeRepository.GetAllAsync()).ToList();
+    }
+
+    private async Task<List<ServiceRecordViewModel>> LoadServiceRecordViewModelsAsync(int vehicleId)
+    {
+        var allServiceTypes = await LoadAllServiceTypes();
+        var latestServiceRecords = await CarMaintenanceDbContext.ServiceRecords
+            .Where(sr => sr.VehicleId == vehicleId)
+            .GroupBy(sr => sr.ServiceTypeId)
+            .Select(g => g.OrderByDescending(sr => sr.DateLastServiced).ThenByDescending(x => x.Id).First())
+            .ToListAsync();
+
+        var latestLookup = latestServiceRecords.ToDictionary(sr => sr.ServiceTypeId);
+        return allServiceTypes.Select(st =>
+        {
+            latestLookup.TryGetValue(st.Id, out var record);
+            return new ServiceRecordViewModel
+            {
+                ServiceType = st.Type,
+                DateLastServiced = record?.DateLastServiced,
+                MileageLastService = record?.MileageLastService,
+                RecommendedIntervalInMiles = st.RecommendedIntervalInMilesMinimum.HasValue ? $"{st.RecommendedIntervalInMilesMinimum} - {st.RecommendedIntervalInMilesMaximum} miles" : null,
+                RecommendedIntervalInYears = st.RecommendedIntervalInYears,
+                NextDueMileage = record?.NextDueMileage,
+                CostLastService = record?.CostLastService,
+                ShopName = record?.ShopName
+            };
+        }).ToList();
+    }
+
+    private sealed class ServiceRecordViewModel
+    {
+        public string ServiceType { get; set; } = string.Empty;
+        public DateTime? DateLastServiced { get; set; }
+        public int? MileageLastService { get; set; }
+        public string? RecommendedIntervalInMiles { get; set; }
+        public int? RecommendedIntervalInYears { get; set; }
+        public string? NextDueMileage { get; set; }
+        public decimal? CostLastService { get; set; }
+        public string? ShopName { get; set; }
+    }
+}

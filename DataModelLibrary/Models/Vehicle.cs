@@ -9,6 +9,7 @@ public class Vehicle
     public string? Model { get; set; }
     public string? Vin { get; set; }
     public string? Notes { get; set; }
+    public int? CurrentMileage { get; set; }
     public ICollection<ServiceRecord> ServiceRecords { get; set; } = new List<ServiceRecord>();
     public ICollection<TireRecord> TireRecords { get; set; } = new List<TireRecord>();
 }
