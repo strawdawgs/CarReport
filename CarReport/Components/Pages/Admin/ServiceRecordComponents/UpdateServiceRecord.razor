@@ -111,6 +111,7 @@
         {
             _serviceRecordRepository = new EntityRepository<ServiceRecord>(CarMaintenanceDbContext);
             await _serviceRecordRepository.UpdateAsync(_serviceRecord);
+            CalulcateNextDueMileage(_serviceRecord);
             await _serviceRecordRepository.SaveChangesAsync();
             NavigationManager.NavigateTo($"/");
         }
@@ -123,6 +124,16 @@
         {
             _isUpdating = false;
         }
+    }
+
+    private void CalulcateNextDueMileage(ServiceRecord serviceRecord)
+    {
+        if (serviceRecord.ServiceType is null) return;
+
+        string nextDueMileageMin = (serviceRecord.MileageLastService + serviceRecord.ServiceType.RecommendedIntervalInMilesMinimum).ToString()!;
+        string nextDueMileageMax = (serviceRecord.MileageLastService + serviceRecord.ServiceType.RecommendedIntervalInMilesMaximum).ToString()!;
+
+        serviceRecord.NextDueMileage = $"{nextDueMileageMin} - {nextDueMileageMax}";
     }
 
     // TODO: Fix navigation to go back to the previous page instead of always going to the home page.
