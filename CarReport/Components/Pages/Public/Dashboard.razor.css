@@ -5,36 +5,13 @@
 }
 
 .quickgrid-container {
-    width: 50%;
 }
 
-::deep .quickgrid[theme=agencytable] th {
-    font-size: 1.25rem;
+::deep .quickgrid[theme=dashboardtable] th {
+    font-size: 1rem;
     font-weight: bold;
 }
 
-::deep .quickgrid[theme=agencytable] tr {
+::deep .quickgrid[theme=dashboardtable] tr {
     font-size: 1rem;
-}
-
-::deep .quickgrid[theme=agencytable] .table-link {
-    color: #0000F0;
-    text-decoration: none;
-}
-
-::deep .quickgrid[theme=agencytable] .chapter-number-col {
-    width: 15%;
-}
-
-::deep .quickgrid[theme=agencytable] .description-col {
-    width: auto;
-}
-
-::deep .quickgrid[theme=agencytable] .rule-info-col {
-    width: 15%;
-}
-
-.agency-info {
-    font-size: 1rem;
-    background: #e0e0e0;
 }
