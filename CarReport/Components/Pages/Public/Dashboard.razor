@@ -10,12 +10,12 @@
 
 <title>Dashboard</title>
 
-<h2>Brandon's 2015 Civic</h2>
+<div class="h2 mb-2">Brandon's 2015 Civic</div>
 @if (_vehicle2015Civic is not null)
 {
-    <h3>Current Mileage: @_vehicle2015Civic.CurrentMileage</h3>
+    <div class="h4 mb-2">Current Mileage: <span class="border border-2 border-dark p-1">@_vehicle2015Civic.CurrentMileage</span></div>
 }
-<QuickGrid TGridItem="ServiceRecordViewModel" Items="_serviceRecords2015Civic.AsQueryable()" Class="table table-bordered border-dark p-2" Theme="agencytable">
+<QuickGrid TGridItem="ServiceRecordViewModel" Items="_serviceRecords2015Civic.AsQueryable()" Class="table table-bordered table-striped border-dark p-2" Theme="dashboardtable">
     <PropertyColumn Property="@(c => c.ServiceType)" Title="Service Type" Class="align-content-center" />
     <TemplateColumn Title="Date Last Serviced" Class="align-content-center">
         @if (context.DateLastServiced.HasValue)
@@ -35,12 +35,12 @@
     <PropertyColumn Property="@(c => c.ShopName)" Title="Shop Name" Class="align-content-center" />
 </QuickGrid>
 
-<h2>Mallory's 2019 Civic</h2>
+<div class="h2 mt-5 mb-2">Mallory's 2019 Civic</div>
 @if (_vehicle2019Civic is not null)
 {
-    <h3>Current Mileage: @_vehicle2019Civic.CurrentMileage</h3>
+    <div class="h4 mb-2">Current Mileage: <span class="border border-2 border-dark p-1">@_vehicle2019Civic.CurrentMileage</span></div>
 }
-<QuickGrid TGridItem="ServiceRecordViewModel" Items="_serviceRecords2019Civic.AsQueryable()" Class="table table-bordered border-dark p-2" Theme="agencytable">
+<QuickGrid TGridItem="ServiceRecordViewModel" Items="_serviceRecords2019Civic.AsQueryable()" Class="table table-bordered table-striped border-dark p-2" Theme="dashboardtable">
     <PropertyColumn Property="@(c => c.ServiceType)" Title="Service Type" Class="align-content-center" />
     <TemplateColumn Title="Date Last Serviced" Class="align-content-center">
         @if (context.DateLastServiced.HasValue)
@@ -162,7 +162,6 @@
             return $"background:linear-gradient(90deg,#ef4444 {redPct:F1}%,#facc15 {redPct:F1}%);";
         }
     }
-
 
     private sealed class ServiceRecordViewModel
     {

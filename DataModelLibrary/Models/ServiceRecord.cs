@@ -9,6 +9,8 @@ public class ServiceRecord
     public ServiceType ServiceType { get; set; } = null!;
     public DateTime? DateLastServiced { get; set; }
     public int? MileageLastService { get; set; }
+    // remove data for this from DB then remove this field
+    // deleted all data for this field from DB on 2025-12-26
     public string? NextDueMileage { get; set; }
     // remove data for this from DB then remove this field
     public DateTime? NextDueDate { get; set; }
