@@ -28,6 +28,10 @@
         </div>
         <div class="row">
             <div class="col">
+                <label for="currentMileage">Current Mileage:</label>
+                <InputNumber id="currentMileage" class="form-control" @bind-Value="Vehicle.CurrentMileage"></InputNumber>
+            </div>
+            <div class="col">
                 <label for="notes">Notes:</label>
                 <InputText id="notes" class="form-control" @bind-Value="Vehicle.Notes"></InputText>
             </div>
