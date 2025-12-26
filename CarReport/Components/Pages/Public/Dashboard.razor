@@ -10,34 +10,52 @@
 
 <title>Dashboard</title>
 
-<h3>Dashboard</h3>
-
-@* Show current data for the 2015 Civic using Quickgrid *@
 <h2>Brandon's 2015 Civic</h2>
 @if (_vehicle2015Civic is not null)
 {
     <h3>Current Mileage: @_vehicle2015Civic.CurrentMileage</h3>
 }
-<QuickGrid TGridItem="ServiceRecordViewModel" Items="_serviceRecords2015Civic.AsQueryable()" Class="table table-bordered border-dark p-2">
+<QuickGrid TGridItem="ServiceRecordViewModel" Items="_serviceRecords2015Civic.AsQueryable()" Class="table table-bordered border-dark p-2" Theme="agencytable">
     <PropertyColumn Property="@(c => c.ServiceType)" Title="Service Type" Class="align-content-center" />
-    <PropertyColumn Property="@(c => c.DateLastServiced)" Title="Date Last Serviced" Class="align-content-center" />
+    <TemplateColumn Title="Date Last Serviced" Class="align-content-center">
+        @if (context.DateLastServiced.HasValue)
+        {
+            @context.DateLastServiced.Value.ToString("MM/dd/yyyy")
+        }
+    </TemplateColumn>
     <PropertyColumn Property="@(c => c.MileageLastService)" Title="Mileage Last Service" Class="align-content-center" />
-    <PropertyColumn Property="@(c => c.RecommendedIntervalInMiles)" Title="Recommended Interval (Miles)" Class="align-content-center" />
-    <PropertyColumn Property="@(c => c.RecommendedIntervalInYears)" Title="Recommended Interval (Years)" Class="align-content-center" />
-    <PropertyColumn Property="@(c => c.NextDueMileage)" Title="Next Due Mileage" Class="align-content-center" />
+    <PropertyColumn Property="@(c => c.RecommendedIntervalInMiles)" Title="Interval (Miles)" Class="align-content-center" />
+    <PropertyColumn Property="@(c => c.RecommendedIntervalInYears)" Title="Interval (Years)" Class="align-content-center" />
+    <TemplateColumn Title="Next Due Mileage">
+        <div class="due-cell" style="@GetDueMileageStyle(context)">
+            @context.NextDueMileageDisplay
+        </div>
+    </TemplateColumn>
     <PropertyColumn Property="@(c => c.CostLastService)" Title="Cost Last Service" Class="align-content-center" />
     <PropertyColumn Property="@(c => c.ShopName)" Title="Shop Name" Class="align-content-center" />
 </QuickGrid>
 
-@* Show current data for the 2019 Civic using Quickgrid *@
 <h2>Mallory's 2019 Civic</h2>
-<QuickGrid TGridItem="ServiceRecordViewModel" Items="_serviceRecords2019Civic.AsQueryable()" Class="table table-bordered border-dark p-2">
+@if (_vehicle2019Civic is not null)
+{
+    <h3>Current Mileage: @_vehicle2019Civic.CurrentMileage</h3>
+}
+<QuickGrid TGridItem="ServiceRecordViewModel" Items="_serviceRecords2019Civic.AsQueryable()" Class="table table-bordered border-dark p-2" Theme="agencytable">
     <PropertyColumn Property="@(c => c.ServiceType)" Title="Service Type" Class="align-content-center" />
-    <PropertyColumn Property="@(c => c.DateLastServiced)" Title="Date Last Serviced" Class="align-content-center" />
+    <TemplateColumn Title="Date Last Serviced" Class="align-content-center">
+        @if (context.DateLastServiced.HasValue)
+        {
+            @context.DateLastServiced.Value.ToString("MM/dd/yyyy")
+        }
+    </TemplateColumn>
     <PropertyColumn Property="@(c => c.MileageLastService)" Title="Mileage Last Service" Class="align-content-center" />
-    <PropertyColumn Property="@(c => c.RecommendedIntervalInMiles)" Title="Recommended Interval (Miles)" Class="align-content-center" />
-    <PropertyColumn Property="@(c => c.RecommendedIntervalInYears)" Title="Recommended Interval (Years)" Class="align-content-center" />
-    <PropertyColumn Property="@(c => c.NextDueMileage)" Title="Next Due Mileage" Class="align-content-center" />
+    <PropertyColumn Property="@(c => c.RecommendedIntervalInMiles)" Title="Interval (Miles)" Class="align-content-center" />
+    <PropertyColumn Property="@(c => c.RecommendedIntervalInYears)" Title="Interval (Years)" Class="align-content-center" />
+    <TemplateColumn Title="Next Due Mileage">
+        <div class="due-cell" style="@GetDueMileageStyle(context)">
+            @context.NextDueMileageDisplay
+        </div>
+    </TemplateColumn>
     <PropertyColumn Property="@(c => c.CostLastService)" Title="Cost Last Service" Class="align-content-center" />
     <PropertyColumn Property="@(c => c.ShopName)" Title="Shop Name" Class="align-content-center" />
 </QuickGrid>
@@ -52,8 +70,10 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadVehiclesAsync();
-        _serviceRecords2015Civic = await LoadServiceRecordViewModelsAsync(_vehicle2015Civic!.Id);
-        _serviceRecords2019Civic = await LoadServiceRecordViewModelsAsync(_vehicle2019Civic!.Id);
+        if (_vehicle2015Civic is null || _vehicle2019Civic is null)
+            return;
+        _serviceRecords2015Civic = await LoadServiceRecordViewModelsAsync(_vehicle2015Civic);
+        _serviceRecords2019Civic = await LoadServiceRecordViewModelsAsync(_vehicle2019Civic);
     }
 
     private async Task LoadVehiclesAsync()
@@ -70,41 +90,94 @@
         return (await serviceTypeRepository.GetAllAsync()).ToList();
     }
 
-    private async Task<List<ServiceRecordViewModel>> LoadServiceRecordViewModelsAsync(int vehicleId)
+    private async Task<List<ServiceRecordViewModel>> LoadServiceRecordViewModelsAsync(Vehicle vehicle)
     {
         var allServiceTypes = await LoadAllServiceTypes();
         var latestServiceRecords = await CarMaintenanceDbContext.ServiceRecords
-            .Where(sr => sr.VehicleId == vehicleId)
+            .Where(sr => sr.VehicleId == vehicle.Id)
             .GroupBy(sr => sr.ServiceTypeId)
-            .Select(g => g.OrderByDescending(sr => sr.DateLastServiced).ThenByDescending(x => x.Id).First())
+            .Select(g => g
+                .OrderByDescending(sr => sr.DateLastServiced)
+                .ThenByDescending(x => x.Id)
+                .First())
             .ToListAsync();
 
         var latestLookup = latestServiceRecords.ToDictionary(sr => sr.ServiceTypeId);
+
         return allServiceTypes.Select(st =>
         {
             latestLookup.TryGetValue(st.Id, out var record);
+
+            var baseMileage = record?.MileageLastService ?? 0;
+
+            int? nextMinMileage = st.RecommendedIntervalInMilesMinimum.HasValue
+                ? baseMileage + st.RecommendedIntervalInMilesMinimum.Value
+                : null;
+
+            int? nextMaxMileage = st.RecommendedIntervalInMilesMaximum.HasValue
+                ? baseMileage + st.RecommendedIntervalInMilesMaximum.Value
+                : null;
+
             return new ServiceRecordViewModel
             {
                 ServiceType = st.Type,
                 DateLastServiced = record?.DateLastServiced,
                 MileageLastService = record?.MileageLastService,
-                RecommendedIntervalInMiles = st.RecommendedIntervalInMilesMinimum.HasValue ? $"{st.RecommendedIntervalInMilesMinimum} - {st.RecommendedIntervalInMilesMaximum} miles" : null,
-                RecommendedIntervalInYears = st.RecommendedIntervalInYears,
-                NextDueMileage = record?.NextDueMileage,
+                CurrentMileage = vehicle.CurrentMileage,
+                RecommendedIntervalInMiles = st.RecommendedIntervalInMilesMinimum.HasValue ? $"{st.RecommendedIntervalInMilesMinimum} - {st.RecommendedIntervalInMilesMaximum}" : null,
+                RecommendedIntervalInYears = st.RecommendedIntervalInYears.HasValue ? st.RecommendedIntervalInYears.ToString() : null,
+                NextDueMinMiles = nextMinMileage,
+                NextDueMaxMiles = nextMaxMileage,
                 CostLastService = record?.CostLastService,
                 ShopName = record?.ShopName
             };
         }).ToList();
     }
 
+    private static string GetDueMileageStyle(ServiceRecordViewModel row)
+    {
+        if (!row.CurrentMileage.HasValue || !row.NextDueMinMiles.HasValue || !row.NextDueMaxMiles.HasValue)
+            return "";
+
+        var current = row.CurrentMileage.Value;
+        var min = row.NextDueMinMiles.Value;
+        var max = row.NextDueMaxMiles.Value;
+
+        if (max <= min) return "background:#e5e7eb;";
+
+        if (current < min) return "background:#22c55e;";
+        if (current >= max) return "background:#ef4444;";
+
+        var p = (double)(current - min) / (max - min);
+        p = Math.Clamp(p, 0.0, 1.0);
+
+        if (p <= 0.5)
+        {
+            var yellowPct = (p / 0.5) * 100.0;
+            return $"background:linear-gradient(90deg,#facc15 {yellowPct:F1}%,#22c55e {yellowPct:F1}%);";
+        }
+        else
+        {
+            var redPct = ((p - 0.5) / 0.5) * 100.0;
+            return $"background:linear-gradient(90deg,#ef4444 {redPct:F1}%,#facc15 {redPct:F1}%);";
+        }
+    }
+
+
     private sealed class ServiceRecordViewModel
     {
         public string ServiceType { get; set; } = string.Empty;
         public DateTime? DateLastServiced { get; set; }
         public int? MileageLastService { get; set; }
+        public int? CurrentMileage { get; set; }
         public string? RecommendedIntervalInMiles { get; set; }
-        public int? RecommendedIntervalInYears { get; set; }
-        public string? NextDueMileage { get; set; }
+        public string? RecommendedIntervalInYears { get; set; }
+        public int? NextDueMinMiles { get; set; }
+        public int? NextDueMaxMiles { get; set; }
+        public string NextDueMileageDisplay =>
+        (NextDueMinMiles.HasValue && NextDueMaxMiles.HasValue)
+            ? $"{NextDueMinMiles.Value:N0} - {NextDueMaxMiles.Value:N0}"
+            : "";
         public decimal? CostLastService { get; set; }
         public string? ShopName { get; set; }
     }
