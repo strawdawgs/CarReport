@@ -13,5 +13,6 @@ public class ServiceTypeConfiguration : IEntityTypeConfiguration<ServiceType>
         builder.Property(st => st.RecommendedIntervalInMilesMinimum);
         builder.Property(st => st.RecommendedIntervalInMilesMaximum);
         builder.Property(st => st.RecommendedIntervalInYears);
+        builder.Property(st => st.EstimatedCost);
     }
 }

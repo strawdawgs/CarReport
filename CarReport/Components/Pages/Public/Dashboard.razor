@@ -31,7 +31,8 @@
             @context.NextDueMileageDisplay
         </div>
     </TemplateColumn>
-    <PropertyColumn Property="@(c => c.CostLastService)" Title="Cost Last Service" Class="align-content-center" />
+    <PropertyColumn Property="@(c => $"$" + c.EstimatedCost)" Title="Estimated Cost" Class="align-content-center" />
+    <PropertyColumn Property="@(c => $"$" + c.CostLastService)" Title="Cost Last Service" Class="align-content-center" />
     <PropertyColumn Property="@(c => c.ShopName)" Title="Shop Name" Class="align-content-center" />
 </QuickGrid>
 
@@ -56,7 +57,8 @@
             @context.NextDueMileageDisplay
         </div>
     </TemplateColumn>
-    <PropertyColumn Property="@(c => c.CostLastService)" Title="Cost Last Service" Class="align-content-center" />
+    <PropertyColumn Property="@(c => $"$" + c.EstimatedCost)" Title="Estimated Cost" Class="align-content-center" />
+    <PropertyColumn Property="@(c => $"$" + c.CostLastService)" Title="Cost Last Service" Class="align-content-center" />
     <PropertyColumn Property="@(c => c.ShopName)" Title="Shop Name" Class="align-content-center" />
 </QuickGrid>
 
@@ -128,6 +130,7 @@
                 RecommendedIntervalInYears = st.RecommendedIntervalInYears.HasValue ? st.RecommendedIntervalInYears.ToString() : null,
                 NextDueMinMiles = nextMinMileage,
                 NextDueMaxMiles = nextMaxMileage,
+                EstimatedCost = st.EstimatedCost,
                 CostLastService = record?.CostLastService,
                 ShopName = record?.ShopName
             };
@@ -145,8 +148,12 @@
 
         if (max <= min) return "background:#e5e7eb;";
 
-        if (current < min) return "background:#22c55e;";
-        if (current >= max) return "background:#ef4444;";
+        // green - #80ef80
+        // red - #ff4747
+        // yellow - #ffee8c
+
+        if (current < min) return "background:#80ef80;";
+        if (current >= max) return "background:#ff4747;";
 
         var p = (double)(current - min) / (max - min);
         p = Math.Clamp(p, 0.0, 1.0);
@@ -154,12 +161,12 @@
         if (p <= 0.5)
         {
             var yellowPct = (p / 0.5) * 100.0;
-            return $"background:linear-gradient(90deg,#facc15 {yellowPct:F1}%,#22c55e {yellowPct:F1}%);";
+            return $"background:linear-gradient(90deg,#ffee8c {yellowPct:F1}%,#80ef80 {yellowPct:F1}%);";
         }
         else
         {
             var redPct = ((p - 0.5) / 0.5) * 100.0;
-            return $"background:linear-gradient(90deg,#ef4444 {redPct:F1}%,#facc15 {redPct:F1}%);";
+            return $"background:linear-gradient(90deg,#ff4747 {redPct:F1}%,#ffee8c {redPct:F1}%);";
         }
     }
 
@@ -177,6 +184,7 @@
         (NextDueMinMiles.HasValue && NextDueMaxMiles.HasValue)
             ? $"{NextDueMinMiles.Value:N0} - {NextDueMaxMiles.Value:N0}"
             : "";
+        public int? EstimatedCost { get; set; }
         public decimal? CostLastService { get; set; }
         public string? ShopName { get; set; }
     }

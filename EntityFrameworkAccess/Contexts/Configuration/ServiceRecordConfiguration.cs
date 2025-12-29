@@ -11,8 +11,6 @@ public class ServiceRecordConfiguration : IEntityTypeConfiguration<ServiceRecord
         builder.HasKey(sr => sr.Id);
         builder.Property(sr => sr.DateLastServiced);
         builder.Property(sr => sr.MileageLastService);
-        builder.Property(sr => sr.NextDueMileage).HasMaxLength(50);
-        builder.Property(sr => sr.NextDueDate);
         builder.Property(sr => sr.CostLastService);
         builder.Property(sr => sr.ShopName).HasMaxLength(100);
         builder.Property(sr => sr.Notes);
