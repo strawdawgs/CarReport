@@ -7,5 +7,6 @@ public class ServiceType
     public int? RecommendedIntervalInMilesMinimum { get; set; }
     public int? RecommendedIntervalInMilesMaximum { get; set; }
     public int? RecommendedIntervalInYears { get; set; }
+    public int? EstimatedCost { get; set; }
     public ICollection<ServiceRecord> ServiceRecords { get; set; } = new List<ServiceRecord>();
 }

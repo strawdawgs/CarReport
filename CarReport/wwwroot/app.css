@@ -51,7 +51,7 @@ h1:focus {
 }
 
 .due-cell {
-    padding: .35rem .5rem;
+    padding: 0rem .5rem !important;
     border-radius: .25rem;
     font-weight: 600;
 }
