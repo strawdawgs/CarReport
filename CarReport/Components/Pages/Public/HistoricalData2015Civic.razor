@@ -1,9 +1,82 @@
 ﻿@page "/hd2015"
 
-<h3>Historical Data for the 2015 Civic</h3>
+@using DataModelLibrary.Models
+@using EntityFrameworkAccess.Contexts
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.EntityFrameworkCore
 
-@* Load historical data for the 2015 Civic *@
+@inject CarMaintenanceDbContext CarMaintenanceDbContext
+
+<title>2015 Civic History</title>
+
+<div class="h3 mb-3">Historical Data for the 2015 Civic</div>
+
+@if (_2015Civic is not null)
+{
+    <div class="h4 mb-2">Current Mileage: <span class="border border-2 border-dark p-1">@_2015Civic.CurrentMileage</span></div>
+}
+
+<QuickGrid Items="_serviceRecords2015Civic.AsQueryable()" Class="table table-bordered table-striped border-dark p-2">
+    <PropertyColumn Property="sr => sr.ServiceType" Title="Service Type"></PropertyColumn>
+    <TemplateColumn Title="Date Last Serviced" Class="align-content-center">
+        @if (context.DateLastServiced.HasValue)
+        {
+            @context.DateLastServiced.Value.ToString("MM/dd/yyyy")
+        }
+    </TemplateColumn>
+    <PropertyColumn Property="sr => sr.MileageLastService" Title="Mileage Last Service"></PropertyColumn>
+    <PropertyColumn Property="sr => sr.CostLastService" Title="Cost Last Service"></PropertyColumn>
+    <PropertyColumn Property="sr => sr.ShopName" Title="Shop Name"></PropertyColumn>
+    <PropertyColumn Property="sr => sr.Notes" Title="Notes"></PropertyColumn>
+</QuickGrid>
 
 @code {
+    Vehicle? _2015Civic = default!;
+    List<ServiceRecordViewModel> _serviceRecords2015Civic = new();
 
+    protected override async Task OnInitializedAsync()
+    {
+        await Load2015Civic();
+        await LoadServiceRecords2015Civic();
+    }
+
+    private async Task Load2015Civic()
+    {
+        _2015Civic = await CarMaintenanceDbContext.Vehicles
+            .AsNoTracking()
+            .FirstOrDefaultAsync(v => v.DisplayName == "Brandons Car");
+    }
+
+    private async Task LoadServiceRecords2015Civic()
+    {
+        if (_2015Civic is null)
+            return;
+
+        var records = await CarMaintenanceDbContext.ServiceRecords
+            .AsNoTracking()
+            .Where(sr => sr.VehicleId == _2015Civic.Id)
+            .Include(sr => sr.ServiceType)
+            .OrderByDescending(sr => sr.DateLastServiced)
+            .ToListAsync();
+
+        _serviceRecords2015Civic = records.Select(sr => new ServiceRecordViewModel
+        {
+            ServiceType = sr.ServiceType.Type,
+            DateLastServiced = sr.DateLastServiced,
+            MileageLastService = sr.MileageLastService,
+            CostLastService = sr.CostLastService,
+            ShopName = sr.ShopName,
+            Notes = sr.Notes
+        }).ToList();
+    }
+
+    private sealed class ServiceRecordViewModel
+    {
+        public string ServiceType { get; set; } = string.Empty;
+        public DateTime? DateLastServiced { get; set; }
+        public int? MileageLastService { get; set; }
+        public decimal? CostLastService { get; set; }
+        public string? ShopName { get; set; }
+        public string? Notes { get; set; }
+    }
 }
