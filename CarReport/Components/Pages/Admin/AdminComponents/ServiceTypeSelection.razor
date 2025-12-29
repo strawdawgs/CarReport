@@ -1,0 +1,39 @@
+﻿@page "/admin/service-type-selection"
+
+@using DataModelLibrary.Models
+@using EntityFrameworkAccess.Contexts
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.EntityFrameworkCore
+
+@inject CarMaintenanceDbContext CarMaintenanceDbContext
+@inject NavigationManager NavigationManager
+
+<title>Service Type Selection</title>
+
+<div class="model-option mb-5">
+    <a href="/create/service-type" class="model-option-link">
+        <div class="h2">New Service Type</div>
+        <div>Add a new service type</div>
+    </a>
+</div>
+
+<QuickGrid Items="_allServiceTypes.AsQueryable()" Class="table table-bordered table-striped border-dark p-2">
+    <PropertyColumn Property="@(st => st.Type)" Title="Service Type"></PropertyColumn>
+    <TemplateColumn Title="Action" Class="align-content-center">
+        <button class="btn btn-sm btn-primary" @onclick="() => EditServiceType(context.Id)">Edit</button>
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+    private List<ServiceType> _allServiceTypes = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _allServiceTypes = await CarMaintenanceDbContext.ServiceTypes.ToListAsync();
+    }
+
+    private void EditServiceType(int serviceTypeId)
+    {
+        NavigationManager.NavigateTo($"/update/service-type/{serviceTypeId}");
+    }
+}
