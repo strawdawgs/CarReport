@@ -7,13 +7,23 @@
 @using Microsoft.EntityFrameworkCore
 
 @inject CarMaintenanceDbContext CarMaintenanceDbContext
+@inject NavigationManager NavigationManager
 
 <title>Dashboard</title>
 
 <div class="h2 mb-2">Brandon's 2015 Civic</div>
 @if (_vehicle2015Civic is not null)
 {
-    <div class="h4 mb-2">Current Mileage: <span class="border border-2 border-dark p-1">@_vehicle2015Civic.CurrentMileage</span></div>
+    <div class="container-fluid mb-2">
+        <div class="row justify-content-between">
+            <div class="col">
+                <div class="h3">Current Mileage: <span class="border border-2 border-dark p-1">@_vehicle2015Civic.CurrentMileage</span></div>
+            </div>
+            <div class="col text-end">
+                <button class="btn btn-primary p-1" @onclick="() => RouteToServiceHistory(_vehicle2015Civic.Id)">Service History</button>
+            </div>
+        </div>
+    </div>
 }
 <QuickGrid TGridItem="ServiceRecordViewModel" Items="_serviceRecords2015Civic.AsQueryable()" Class="table table-bordered table-striped border-dark p-2" Theme="dashboardtable">
     <PropertyColumn Property="@(c => c.ServiceType)" Title="Service Type" Class="align-content-center" />
@@ -39,7 +49,16 @@
 <div class="h2 mt-5 mb-2">Mallory's 2019 Civic</div>
 @if (_vehicle2019Civic is not null)
 {
-    <div class="h4 mb-2">Current Mileage: <span class="border border-2 border-dark p-1">@_vehicle2019Civic.CurrentMileage</span></div>
+    <div class="container-fluid mb-2">
+        <div class="row justify-content-between">
+            <div class="col">
+                <div class="h3">Current Mileage: <span class="border border-2 border-dark p-1">@_vehicle2019Civic.CurrentMileage</span></div>
+            </div>
+            <div class="col text-end">
+                <button class="btn btn-primary p-1" @onclick="() => RouteToServiceHistory(_vehicle2019Civic.Id)">Service History</button>
+            </div>
+        </div>
+    </div>
 }
 <QuickGrid TGridItem="ServiceRecordViewModel" Items="_serviceRecords2019Civic.AsQueryable()" Class="table table-bordered table-striped border-dark p-2" Theme="dashboardtable">
     <PropertyColumn Property="@(c => c.ServiceType)" Title="Service Type" Class="align-content-center" />
@@ -78,12 +97,17 @@
         _serviceRecords2019Civic = await LoadServiceRecordViewModelsAsync(_vehicle2019Civic);
     }
 
+    private void RouteToServiceHistory(int vehicleId)
+    {
+        NavigationManager.NavigateTo($"/service-history/{vehicleId}");
+    }
+
     private async Task LoadVehiclesAsync()
     {
         _vehicleRepository = new EntityRepository<Vehicle>(CarMaintenanceDbContext);
         var vehicles = await _vehicleRepository.GetAllAsync();
-        _vehicle2015Civic = vehicles.FirstOrDefault(v => v!.DisplayName == "Brandons Car");
-        _vehicle2019Civic = vehicles.FirstOrDefault(v => v!.DisplayName == "Mallorys Car");
+        _vehicle2015Civic = vehicles.FirstOrDefault(v => v!.DisplayName == "Brandons 2015 Civic");
+        _vehicle2019Civic = vehicles.FirstOrDefault(v => v!.DisplayName == "Mallorys 2019 Civic");
     }
 
     private async Task<List<ServiceType>> LoadAllServiceTypes()
