@@ -1,0 +1,39 @@
+﻿@page "/admin/vehicle-selection"
+
+@using DataModelLibrary.Models
+@using EntityFrameworkAccess.Repositories
+@using EntityFrameworkAccess.Contexts
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.EntityFrameworkCore
+
+@inject CarMaintenanceDbContext CarMaintenanceDbContext
+@inject NavigationManager NavigationManager
+
+<title>Vehicle Selection</title>
+
+<div class="h2 mb-5">Vehicle Selection</div>
+
+<QuickGrid Items="_allVehicles.AsQueryable()" Class="table table-bordered table-striped border-dark p-2">
+    <PropertyColumn Property="@(v => v.DisplayName)" Title="Name" Class="align-content-center"></PropertyColumn>
+    <PropertyColumn Property="@(v => v.Year)" Title="Year" Class="align-content-center"></PropertyColumn>
+    <PropertyColumn Property="@(v => v.Make)" Title="Make" Class="align-content-center"></PropertyColumn>
+    <PropertyColumn Property="@(v => v.Model)" Title="Model" Class="align-content-center"></PropertyColumn>
+    <PropertyColumn Property="@(v => v.CurrentMileage)" Title="Current Mileage" Class="align-content-center"></PropertyColumn>
+    <TemplateColumn Title="Action" Class="align-content-center">
+        <button class="btn btn-sm btn-primary" @onclick="() => EditVehicle(context.Id)">Edit</button>
+    </TemplateColumn>
+</QuickGrid>
+
+@code {
+    private List<Vehicle> _allVehicles = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _allVehicles = await CarMaintenanceDbContext.Vehicles.ToListAsync();
+    }
+
+    private void EditVehicle(int vehicleId)
+    {
+        NavigationManager.NavigateTo($"/update/vehicle/{vehicleId}");
+    }
+}
