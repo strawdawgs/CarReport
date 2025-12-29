@@ -1,7 +1,6 @@
 ﻿@page "/admin/vehicle-selection"
 
 @using DataModelLibrary.Models
-@using EntityFrameworkAccess.Repositories
 @using EntityFrameworkAccess.Contexts
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using Microsoft.EntityFrameworkCore
@@ -11,7 +10,12 @@
 
 <title>Vehicle Selection</title>
 
-<div class="h2 mb-5">Vehicle Selection</div>
+<div class="model-option mb-5">
+    <a href="/create/vehicle" class="model-option-link">
+        <div class="h2">New Vehicle</div>
+        <div>Add a new vehicle</div>
+    </a>
+</div>
 
 <QuickGrid Items="_allVehicles.AsQueryable()" Class="table table-bordered table-striped border-dark p-2">
     <PropertyColumn Property="@(v => v.DisplayName)" Title="Name" Class="align-content-center"></PropertyColumn>

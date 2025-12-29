@@ -1,0 +1,119 @@
+﻿@page "/admin/service-record-selection"
+
+@using DataModelLibrary.Models
+@using EntityFrameworkAccess.Contexts
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Microsoft.EntityFrameworkCore
+
+@inject CarMaintenanceDbContext CarMaintenanceDbContext
+@inject NavigationManager NavigationManager
+
+<title>Service Record Selection</title>
+
+<div class="model-option mb-5">
+    <a href="/create/service-record" class="model-option-link">
+        <div class="h2">New Service Record</div>
+        <div>Add a new service record</div>
+    </a>
+</div>
+
+<div class="mb-3">
+    <label class="h3 form-label">Vehicle</label>
+
+    <select class="form-select" value="@_selectedVehicleIdString" @onchange="OnVehicleChanged">
+        <option value="">-- Select a vehicle --</option>
+        @foreach (var v in _vehicles)
+        {
+            <option value="@v.Id">@v.DisplayName</option>
+        }
+    </select>
+</div>
+
+@if (_selectedVehicleId is null)
+{
+    <div class="alert alert-secondary">
+        Select a vehicle to view its service records.
+    </div>
+}
+else if (_serviceRecords.Count == 0)
+{
+    <div class="alert alert-info">
+        No service records found for this vehicle.
+    </div>
+}
+else
+{
+    <QuickGrid Items="@_serviceRecords.AsQueryable()" Class="table table-bordered table-striped border-dark p-2">
+        <PropertyColumn Property="@(c => c.ServiceType)" Title="Service Type" />
+        <TemplateColumn Title="Date Last Serviced" Class="align-content-center">
+            @if (context.DateLastServiced.HasValue)
+            {
+                @context.DateLastServiced.Value.ToString("MM/dd/yyyy")
+            }
+        </TemplateColumn>
+        <TemplateColumn Title="Action" Class="align-content-center">
+            <button class="btn btn-sm btn-primary"
+                    @onclick="() => EditServiceRecord(context.Id)">
+                Edit
+            </button>
+        </TemplateColumn>
+    </QuickGrid>
+}
+
+@code {
+    private List<Vehicle> _vehicles = [];
+    private List<ServiceRecordViewModel> _serviceRecords = [];
+
+    private int? _selectedVehicleId;
+    private string _selectedVehicleIdString => _selectedVehicleId?.ToString() ?? string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _vehicles = await CarMaintenanceDbContext.Vehicles
+            .AsNoTracking()
+            .ToListAsync();
+        _serviceRecords = [];
+    }
+
+    private async Task OnVehicleChanged(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString();
+
+        if (string.IsNullOrWhiteSpace(value) || !int.TryParse(value, out var vehicleId))
+        {
+            _selectedVehicleId = null;
+            _serviceRecords = [];
+            return;
+        }
+
+        _selectedVehicleId = vehicleId;
+        await LoadServiceRecordsForVehicle(vehicleId);
+    }
+
+    private async Task LoadServiceRecordsForVehicle(int vehicleId)
+    {
+        _serviceRecords = await CarMaintenanceDbContext.ServiceRecords
+            .AsNoTracking()
+            .Where(sr => sr.VehicleId == vehicleId)
+            .OrderByDescending(sr => sr.DateLastServiced)
+            .Select(sr => new ServiceRecordViewModel
+            {
+                Id = sr.Id,
+                ServiceType = sr.ServiceType.Type,
+                DateLastServiced = sr.DateLastServiced
+            })
+            .ToListAsync();
+    }
+
+    private void EditServiceRecord(int serviceRecordId)
+    {
+        NavigationManager.NavigateTo($"/update/service-record/{serviceRecordId}");
+    }
+
+    private sealed class ServiceRecordViewModel
+    {
+        public int Id { get; set; }
+        public string ServiceType { get; set; } = string.Empty;
+        public DateTime? DateLastServiced { get; set; }
+    }
+}
