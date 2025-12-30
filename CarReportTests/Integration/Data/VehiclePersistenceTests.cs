@@ -1,5 +1,4 @@
-﻿using DataModelLibrary.Models;
-using EntityFrameworkAccess.Contexts;
+﻿using EntityFrameworkAccess.Contexts;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarReportTests.Integration.Data;

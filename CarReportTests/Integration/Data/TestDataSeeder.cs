@@ -37,4 +37,31 @@ public class TestDataSeeder
             }
         );
     }
+
+    public static void SeedServiceType(CarMaintenanceDbContext context) 
+    {
+        context.ServiceTypes.Add(
+            new ServiceType 
+            {
+                Type = "Oil Change",
+                EstimatedCost = 35
+            }
+        );
+    }
+
+    public static void SeedServiceTypes(CarMaintenanceDbContext context) 
+    {
+        context.ServiceTypes.AddRange(
+            new ServiceType 
+            {
+                Type = "Oil Change",
+                EstimatedCost = 35
+            },
+            new ServiceType 
+            {
+                Type = "Tire Rotation",
+                EstimatedCost = 50
+            }
+        );
+    }
 }
